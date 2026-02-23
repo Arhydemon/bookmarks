@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid px-3 py-3">
+  <h1 class="h5 mb-3">
+    {% if link %}редактирование{% else %}новая ссылка{% endif %}
+  </h1>
+
+  <form class="card card-body" method="post"
+        action="{% if link %}{{ url_for('link_update', link_id=link.id) }}{% else %}{{ url_for('link_create') }}{% endif %}">
+
+    <div class="mb-3">
+      <label class="form-label">url (обязательно)</label>
+      <input class="form-control" name="url" required
+             value="{% if link %}{{ link.url }}{% endif %}"
+             placeholder="https://... или file:///c:/...">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">название (обязательно)</label>
+      <input class="form-control" name="title" required
+             value="{% if link %}{{ link.title }}{% endif %}">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">описание (необязательно)</label>
+      <textarea class="form-control" name="description" rows="3">{% if link and link.description %}{{ link.description }}{% endif %}</textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">категория (ровно одна)</label>
+      <select class="form-select" name="category_id">
+        <option value="">без категории</option>
+        {% for c in categories %}
+          <option value="{{ c.id }}" {% if link and link.category and link.category.id == c.id %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">значок</label>
+      <select class="form-select" name="icon">
+        {% for value, label in icon_options %}
+          <option value="{{ value }}" {% if link and link.icon == value %}selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <div class="form-text">значок будет показываться рядом с названием закладки</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">теги</label>
+      <input class="form-control" name="tags" value="{{ tag_string }}"
+             placeholder="#frontend #react или react, frontend">
+      <div class="form-text">теги создаются на лету, можно несколько</div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">сохранить</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('links_list') }}">отмена</a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5" style="max-width: 520px;">
+  <h1 class="h4 mb-3">вход</h1>
+
+  <form class="card card-body" method="post" action="{{ url_for('login_post') }}">
+    <div class="mb-3">
+      <label class="form-label">логин</label>
+      <input class="form-control" name="username" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">пароль</label>
+      <input class="form-control" name="password" type="password" required>
+    </div>
+
+    <button class="btn btn-dark" type="submit">войти</button>
+    <div class="mt-3">
+      <a href="{{ url_for('register') }}">нет аккаунта? регистрация</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

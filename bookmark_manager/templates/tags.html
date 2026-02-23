@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid px-3 py-3">
+  <h1 class="h5 mb-3">теги</h1>
+
+  <form class="card card-body mb-3" method="post" action="{{ url_for('tag_merge') }}">
+    <h2 class="h6 mb-2">объединить теги</h2>
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">source (будет удалён)</label>
+        <input class="form-control" name="source" placeholder="#oldtag" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">target (куда переносим)</label>
+        <input class="form-control" name="target" placeholder="#newtag" required>
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-primary w-100" type="submit">объединить</button>
+      </div>
+    </div>
+    <div class="form-text mt-2">
+      пример: source = reactjs, target = react (все ссылки с reactjs получат react, а reactjs удалится)
+    </div>
+  </form>
+
+  <div class="list-group">
+    {% for t in tags %}
+      <div class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <span class="fw-semibold">#{{ t.name }}</span>
+          <span class="text-muted ms-2">ссылок: {{ tag_counts.get(t.id, 0) }}</span>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('links_list', tags=t.name) }}">
+            смотреть ссылки
+          </a>
+
+          <form method="post" action="{{ url_for('tag_delete', tag_id=t.id) }}"
+                onsubmit="return confirm('удалить тег?');">
+            <button class="btn btn-sm btn-outline-danger" type="submit">удалить</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

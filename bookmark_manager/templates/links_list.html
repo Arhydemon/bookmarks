@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block sidebar %}
+  <div class="mb-4">
+    <div class="text-uppercase small text-muted mb-2">категории</div>
+
+    <div class="list-group">
+      <a class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}"
+         href="{{ url_for('links_list', q=q, tags=tags_param) }}">
+        все
+      </a>
+
+      {% for c in categories %}
+        <a class="list-group-item list-group-item-action {% if selected_category and selected_category.id == c.id %}active{% endif %}"
+           href="{{ url_for('links_list', category_id=c.id, q=q, tags=tags_param) }}">
+          {{ c.name }}
+        </a>
+      {% endfor %}
+    </div>
+
+    <div class="mt-2">
+      <a class="small text-decoration-none" href="{{ url_for('categories_page') }}">управление категориями</a>
+    </div>
+  </div>
+
+  <div class="mb-2">
+    <div class="text-uppercase small text-muted mb-2">теги</div>
+
+    <div class="d-flex flex-wrap gap-2">
+      {% for t in tags[:35] %}
+        <a class="tag-chip"
+           href="{{ url_for('links_list', q=q, category_id=selected_category.id if selected_category else None, tags=t.name) }}">
+          #{{ t.name }}
+        </a>
+      {% endfor %}
+    </div>
+
+    <div class="mt-2">
+      <a class="small text-decoration-none" href="{{ url_for('tags_page') }}">управление тегами</a>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block content %}
+  <div class="topbar">
+    <form method="get" action="{{ url_for('links_list') }}">
+      <div class="row g-2 align-items-center">
+        <div class="col-12 col-lg-5">
+          <input class="form-control" name="q" value="{{ q }}" placeholder="поиск по названию и описанию">
+        </div>
+
+        <div class="col-12 col-lg-3">
+          <select class="form-select" name="category_id">
+            <option value="">все категории</option>
+            {% for c in categories %}
+              <option value="{{ c.id }}" {% if selected_category and selected_category.id == c.id %}selected{% endif %}>
+                {{ c.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 col-lg-3">
+          <input class="form-control" name="tags" value="{{ tags_param }}" placeholder="теги через запятую: react,frontend">
+        </div>
+
+        <div class="col-12 col-lg-1 d-grid">
+          <button class="btn btn-dark" type="submit">ok</button>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('links_list') }}">сбросить</a>
+          <a class="btn btn-primary btn-sm" href="{{ url_for('link_new_form') }}">добавить</a>
+
+          <div class="ms-auto text-muted small align-self-center">
+            найдено: {{ links|length }}
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="container-fluid px-3 py-3">
+    {% if not links %}
+      <div class="alert alert-info mb-0">нет ссылок по выбранным фильтрам</div>
+    {% else %}
+      <div class="row g-3">
+        {% for l in links %}
+          <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-body d-flex flex-column">
+
+                <div class="d-flex justify-content-between gap-2">
+                  <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer"
+                     class="fw-semibold text-decoration-none">
+
+                    {% if l.icon %}
+                      <i class="{{ l.icon }} me-2"></i>
+                    {% endif %}
+
+                    {{ l.title }}
+                  </a>
+
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                      ...
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <a class="dropdown-item"
+                           href="{{ url_for('link_edit_form', link_id=l.id) }}">
+                          редактировать
+                        </a>
+                      </li>
+                      <li>
+                        <form method="post"
+                              action="{{ url_for('link_delete', link_id=l.id) }}"
+                              onsubmit="return confirm('удалить ссылку?');">
+                          <button class="dropdown-item text-danger" type="submit">
+                            удалить
+                          </button>
+                        </form>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {% if l.description %}
+                  <div class="text-muted mt-2"
+                       style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+                    {{ l.description }}
+                  </div>
+                {% endif %}
+
+                <div class="mt-2 small text-muted">
+                  {% if l.category %}
+                    <span class="badge text-bg-secondary">{{ l.category.name }}</span>
+                  {% else %}
+                    <span class="badge text-bg-light border">без категории</span>
+                  {% endif %}
+                  <span class="ms-2">{{ l.created_at.strftime("%Y-%m-%d %H:%M") }}</span>
+                </div>
+
+                {% if l.tags %}
+                  <div class="mt-3 d-flex flex-wrap gap-2">
+                    {% for t in l.tags %}
+                      <a class="tag-chip"
+                         href="{{ url_for('links_list',
+                                           q=q,
+                                           category_id=selected_category.id if selected_category else None,
+                                           tags=t.name) }}">
+                        #{{ t.name }}
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                <div class="mt-auto pt-3">
+                  <div class="small text-muted" style="word-break: break-all;">
+                    {{ l.url }}
+                  </div>
+
+                  <div class="d-flex gap-2 mt-2">
+                    <a class="btn btn-sm btn-outline-primary"
+                       href="{{ url_for('link_edit_form', link_id=l.id) }}">
+                      ред.
+                    </a>
+                    <a class="btn btn-sm btn-primary"
+                       href="{{ l.url }}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                      открыть
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
